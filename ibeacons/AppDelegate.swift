@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // permission request, and location operations are complete (don't store it in a method variable)
     let locationManager = CLLocationManager()
 
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
         locationManager.delegate = self
@@ -29,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         locationManager.requestAlwaysAuthorization()
         
         //Local Notification permission to show beacon monitoring in background
-        application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes:[.Sound, .Alert, .Badge], categories: nil))
+        application.registerUserNotificationSettings(UIUserNotificationSettings(types:[.sound, .alert, .badge], categories: nil))
         
         return true
     }
@@ -38,75 +38,75 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate : CLLocationManagerDelegate {
     
     //Wait until permission is allowed to start listening for beacons
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         print("got permission")
-        if status == .AuthorizedAlways {
-            if let uuid = NSUUID(UUIDString: "0248BD99-1141-4347-9B2C-FFE34F92C405") {
+        if status == .authorizedAlways {
+            if let uuid = UUID(uuidString: "0248BD99-1141-4347-9B2C-FFE34F92C405") {
                 let region = CLBeaconRegion(proximityUUID: uuid, identifier: "")
-                locationManager.startRangingBeaconsInRegion(region)
+                locationManager.startRangingBeacons(in: region)
             }
         }
     }
     
     // Confirm that we starting monitoring successfully
-    func locationManager(manager: CLLocationManager, didStartMonitoringForRegion region: CLRegion) {
+    func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
         print("starting monitoring for region")
     }
     
     //Failure delegate methods for region monitoring and general location manager errors
     // Will not fire if you have not set NSLocationAlwaysUsageDescription or NSLocationWhenInUseUsageDescription
-    func locationManager(manager: CLLocationManager, monitoringDidFailForRegion region: CLRegion?, withError error: NSError) {
-        print("Failed monitoring region: \(error.description)")
+    func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
+        print("Failed monitoring region: \((error as NSError).description)")
     }
     
-    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
-        print("Location manager failed: \(error.description)")
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location manager failed: \((error as NSError).description)")
     }
     
     //Saw this beacon, ie. entering its region
-    func locationManager(manager: CLLocationManager, didEnterRegion region: CLRegion) {
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         print("Enter Region")
         let notification = UILocalNotification()
         notification.alertBody = "Welcome :)"
         notification.soundName = "Default"
-        window?.rootViewController?.view.backgroundColor = UIColor.greenColor()
-        UIApplication.sharedApplication().presentLocalNotificationNow(notification)
+        window?.rootViewController?.view.backgroundColor = UIColor.green
+        UIApplication.shared.presentLocalNotificationNow(notification)
     }
     
     //Haven't seen this beacon for a while (20s ish?), ie. exiting its region
-    func locationManager(manager: CLLocationManager, didExitRegion region: CLRegion) {
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         print("Exit Region")
         let notification = UILocalNotification()
         notification.alertBody = "Goodbye :)"
         notification.soundName = "Default"
-        window?.rootViewController?.view.backgroundColor = UIColor.whiteColor()
-        UIApplication.sharedApplication().presentLocalNotificationNow(notification)
+        window?.rootViewController?.view.backgroundColor = UIColor.white
+        UIApplication.shared.presentLocalNotificationNow(notification)
     }
     
     //Ranging beacons delegate method, shows more details about the beacon, including identifiers and distance
-    func locationManager(manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], inRegion region: CLBeaconRegion) {
+    func locationManager(_ manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], in region: CLBeaconRegion) {
         if let beacon = beacons.first {
             print(nameForProximity(beacon.proximity))
         }
     }
     
-    func nameForProximity(proximity: CLProximity) -> String {
+    func nameForProximity(_ proximity: CLProximity) -> String {
         switch proximity {
-        case .Unknown:
+        case .unknown:
             //Not found or unkown
-            window?.rootViewController?.view.backgroundColor = UIColor.redColor()
+            window?.rootViewController?.view.backgroundColor = UIColor.red
             return "Unknown"
-        case .Immediate:
+        case .immediate:
             //About a few centimeters
-            window?.rootViewController?.view.backgroundColor = UIColor.greenColor()
+            window?.rootViewController?.view.backgroundColor = UIColor.green
             return "Immediate"
-        case .Near:
+        case .near:
             //About A few meters
-            window?.rootViewController?.view.backgroundColor = UIColor.blueColor()
+            window?.rootViewController?.view.backgroundColor = UIColor.blue
             return "Near"
-        case .Far:
+        case .far:
             //About greater than 10 meters
-            window?.rootViewController?.view.backgroundColor = UIColor.yellowColor()
+            window?.rootViewController?.view.backgroundColor = UIColor.yellow
             return "Far"
         }
     }
